@@ -74,19 +74,35 @@ class CosyVoice:
                 yield model_output
                 start_time = time.time()
 
-    def inference_zero_shot(self, tts_text, prompt_text, prompt_speech_16k, stream=False, speed=1.0, text_frontend=True):
+    def inference_zero_shot(self, tts_text, prompt_text, prompt_speech_16k, stream=False, speed=1.0, text_frontend=True, text_id: int = 0):
+        _TEST_LOG_TAG = "<MH_INFER_TEST>"
+        _LOGGING_COUNT_WIDTH = 5
+        _DATA_PATH = os.path.join(os.path.dirname(__file__), "data")
+        os.path.makedirs(_DATA_PATH, exist_ok=True)
+        log_file = os.path.join(_DATA_PATH, f"cosyvoice_infer_{text_id:0{_LOGGING_COUNT_WIDTH}d}.log")
+        logging.basicConfig(
+            filename=log_file,
+            level=logging.INFO,
+            format="[%(asctime)s] %(message)s",
+        )
         prompt_text = self.frontend.text_normalize(prompt_text, split=False, text_frontend=text_frontend)
         for i in tqdm(self.frontend.text_normalize(tts_text, split=True, text_frontend=text_frontend)):
             if (not isinstance(i, Generator)) and len(i) < 0.5 * len(prompt_text):
                 logging.warning('synthesis text {} too short than prompt text {}, this may lead to bad performance'.format(i, prompt_text))
             model_input = self.frontend.frontend_zero_shot(i, prompt_text, prompt_speech_16k, self.sample_rate)
             start_time = time.time()
-            logging.info('synthesis text {}'.format(i))
+            infer_start = start_time
+            logging.info(f"{_TEST_LOG_TAG} [START]: start to infer: synthesis text {i}")
             for model_output in self.model.tts(**model_input, stream=stream, speed=speed):
                 speech_len = model_output['tts_speech'].shape[1] / self.sample_rate
-                logging.info('yield speech len {}, rtf {}'.format(speech_len, (time.time() - start_time) / speech_len))
+                end_time = time.time()
+                logging.info(
+                    f"{_TEST_LOG_TAG} [END]: yield speech len {speech_len}, rtf {(end_time - start_time) / speech_len}, elapsed from infer start: {end_time - infer_start} s"
+                )
                 yield model_output
                 start_time = time.time()
+            end_time = time.time()
+            logging.info(f"{_TEST_LOG_TAG} [END]: finish to infer: elapsed from start: {end_time - infer_start} s")
 
     def inference_cross_lingual(self, tts_text, prompt_speech_16k, stream=False, speed=1.0, text_frontend=True):
         for i in tqdm(self.frontend.text_normalize(tts_text, split=True, text_frontend=text_frontend)):
