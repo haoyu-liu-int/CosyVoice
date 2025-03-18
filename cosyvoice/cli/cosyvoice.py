@@ -74,30 +74,7 @@ class CosyVoice:
                 yield model_output
                 start_time = time.time()
 
-    def inference_zero_shot(self, tts_text, prompt_text, prompt_speech_16k, stream=False, speed=1.0, text_frontend=True, text_id: int = 0):
-        _TEST_LOG_TAG = "<MH_INFER_TEST>"
-        _LOGGING_COUNT_WIDTH = 5
-        _DATA_PATH = os.path.join(os.path.dirname(__file__), "data")
-        os.makedirs(_DATA_PATH, exist_ok=True)
-        log_file = os.path.join(_DATA_PATH, f"cosyvoice_infer_{text_id:0{_LOGGING_COUNT_WIDTH}d}.log")
-
-        _logger = logging.getLogger(f"test_logger_{text_id}")
-        _logger.setLevel(logging.INFO)
-        _logger.propagate = False
-
-        # # Create a console handler
-        _console_handler = logging.StreamHandler()
-        _console_handler.setLevel(logging.INFO)
-        _file_handler = logging.FileHandler(log_file)
-        _file_handler.setLevel(logging.INFO)
-
-        # Create a formatter for the console handler
-        _console_formatter = logging.Formatter(f"[%(asctime)s {_TEST_LOG_TAG}] %(message)s")
-        _console_handler.setFormatter(_console_formatter)
-        _file_handler.setFormatter(_console_formatter)
-        _logger.addHandler(_console_handler)
-        _logger.addHandler(_file_handler)
-
+    def inference_zero_shot(self, tts_text, prompt_text, prompt_speech_16k, stream=False, speed=1.0, text_frontend=True, _logger=logging):
         prompt_text = self.frontend.text_normalize(prompt_text, split=False, text_frontend=text_frontend)
         for i in tqdm(self.frontend.text_normalize(tts_text, split=True, text_frontend=text_frontend)):
             if (not isinstance(i, Generator)) and len(i) < 0.5 * len(prompt_text):
