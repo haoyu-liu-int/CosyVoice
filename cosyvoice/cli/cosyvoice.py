@@ -78,7 +78,7 @@ class CosyVoice:
         _TEST_LOG_TAG = "<MH_INFER_TEST>"
         _LOGGING_COUNT_WIDTH = 5
         _DATA_PATH = os.path.join(os.path.dirname(__file__), "data")
-        os.path.makedirs(_DATA_PATH, exist_ok=True)
+        os.makedirs(_DATA_PATH, exist_ok=True)
         log_file = os.path.join(_DATA_PATH, f"cosyvoice_infer_{text_id:0{_LOGGING_COUNT_WIDTH}d}.log")
         logging.basicConfig(
             filename=log_file,
